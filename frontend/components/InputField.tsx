@@ -2,19 +2,9 @@ import React, { useState } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 
-interface InputFieldProps {
-  onSendMessage: (message: string) => void;
-}
 
-const InputField: React.FC<InputFieldProps> = ({ onSendMessage }) => {
+const InputField: React.FC = () => {
   const [message, setMessage] = useState('');
-
-  const handleSendMessage = () => {
-    if (message.trim()) {
-      onSendMessage(message);
-      setMessage('');
-    }
-  };
 
   return (
     <div className="w-full p-4 flex">
@@ -22,11 +12,10 @@ const InputField: React.FC<InputFieldProps> = ({ onSendMessage }) => {
         type="text"
         value={message}
         onChange={(e) => setMessage(e.target.value)}
-        className="flex-grow p-2 border rounded"
+        className="flex-grow p-4 h-12 rounded-full placeholder-gray-500"
         placeholder="Type your message..."
       />
       <Button
-        onClick={handleSendMessage}
         className="ml-2 px-4 py-2 rounded"
       >
         Send

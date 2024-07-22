@@ -13,30 +13,14 @@ interface Conversation {
 }
 
 export default function Home() {
-    const [conversations, setConversations] = useState<Conversation[]>([
-        { title: 'Conversation 1', messages: [{ text: 'Hello!', isUser: false }] },
-        { title: 'Conversation 2', messages: [{ text: 'How can I help you?', isUser: false }] },
-      ]);
-      const [selectedConversationIndex, setSelectedConversationIndex] = useState(0);
-    
-      const handleSendMessage = (message: string) => {
-        const newConversations = [...conversations];
-        newConversations[selectedConversationIndex].messages.push({ text: message, isUser: true });
-        setConversations(newConversations);
-      };
-
-      const selectedConversation = conversations[selectedConversationIndex];
 
     return (
         <div className="h-screen flex">
-            <SideBar
-                conversations={conversations}
-                onSelectConversation={setSelectedConversationIndex}
-            />
-            <Darkmode/>
-            <div className="flex-grow flex flex-col">
-            <ChatWindow messages={selectedConversation.messages} />
-            <InputField onSendMessage={handleSendMessage} />
+            <SideBar/>
+            {/* <Darkmode/> */}
+            <div className="flex-grow flex flex-col max-w-screen-lg mx-auto px-4 sm:px-6 lg:px-8">
+                <ChatWindow />
+                <InputField/>
             </div>
         </div>
     );

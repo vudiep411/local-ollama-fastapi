@@ -1,32 +1,66 @@
 import { create } from 'zustand'
+import axios from 'axios';
 
-interface Message {
-  text: string;
-  role: string;
-}
+const URL = "http://127.0.0.1:8000"
+export const useChatStore = create((set) => ({
+  sessions: [],
+  conversations: [],
+  sessionId: "",
+  userId: "vudiep411",
+  fetchSessions: async (user_id: any) => {
+    console.log("fetch session...")
+    try {
+      const response = await axios.get(`${URL}/sessions/${user_id}`)
+      const data = response.data
+      const sessionsData : any = []
+      for(const key in data) {
+        sessionsData.push({key: key, value: data[key]})
+      }
 
-interface Conversation {
-  title: string;
-  messages: Message[];
-}
+      set((state: any) => ({
+        sessions: sessionsData
+      }))
+    } catch (error) {
+      console.log(error)
+    }
+  },
+  fetchMessages: async (session_id: any) => {
+    try {
+      console.log("fetch messages...")
+      const response = await axios.get(`${URL}/messages/${session_id}`)
+      set((state: any) => ({
+        conversations: response.data
+      }))
+    } catch (error) {
+      console.log(error)
+    }
+  },
+  sendMessage: async(message: string, session_id: string, user_id: string) => {
+    try {
+      
+    } catch (error) {
+      
+    }
+  },
 
-interface ChatState {
-  conversations: Conversation[];
-  selectedConversationIndex: number;
-  selectConversation: (index: number) => void;
-  sendMessage: (message: string) => void;
-}
+  setSession: async (sessionId: string) => {
+    try {
+      const response = await axios.get(`${URL}/messages/${sessionId}`)
 
-export const useChatStore = create<ChatState>((set) => ({
-  conversations: [
-    { title: 'Conversation 1', messages: [{ text: 'Hello!', role: 'user' }] },
-    { title: 'Conversation 2', messages: [{ text: 'How can I help you?', role: 'assistant' }] },
-  ],
-  selectedConversationIndex: 0,
-  selectConversation: (index) => set({ selectedConversationIndex: index }),
-  sendMessage: (message) => set((state) => {
-    const newConversations = [...state.conversations];
-    newConversations[state.selectedConversationIndex].messages.push({ text: message, role: "user" });
-    return { conversations: newConversations };
-  }),
+      set((state: any) => ({
+        sessionId: sessionId
+      }))
+      set((state: any) => ({
+        conversations: response.data
+      }))
+    } catch (error) {
+      console.log(error)
+    }
+  },
+
+  addSession: (sessionId: string) => {
+    set((state: any) => ({
+      sessions: [...state.sessions, {key: sessionId, value: sessionId}]
+    }))
+  }
 }));
