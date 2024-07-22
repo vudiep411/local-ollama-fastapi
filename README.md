@@ -1,6 +1,8 @@
 # AI RAG
 trying to run Ollama locally for RAG purposes. Interact with the model using rest API (WIP)
 
+<img src="./documents/ui.png"/>
+
 ## Test API
 ```bash
 cd llm-service
