@@ -1,24 +1,34 @@
 "use client"
  
 import React, { useState } from "react"
-import Darkmode from "@/components/darkmode";
 import SideBar from "@/components/SideBar";
 import ChatWindow from "@/components/ChatWindow";
 import InputField from "@/components/InputField";
+import Darkmode from "@/components/DarkMode";
 
-
-interface Conversation {
-    title: string;
-    messages: { text: string; isUser: boolean }[];
-}
 
 export default function Home() {
+    const [sidebarOpen, setSidebarOpen] = useState(false);
 
+    const toggleSidebar = () => {
+        setSidebarOpen(!sidebarOpen);
+    };
     return (
         <div className="h-screen flex">
-            <SideBar/>
-            {/* <Darkmode/> */}
-            <div className="flex-grow flex flex-col max-w-screen-lg mx-auto px-4 sm:px-6 lg:px-8">
+            <SideBar 
+                isOpen={sidebarOpen}
+                toggleSidebar={toggleSidebar}
+            />
+            <div className="flex-grow flex flex-col">
+                <div className="flex justify-between">
+                    <button
+                        className="lg:hidden p-2 rounded"
+                        onClick={toggleSidebar}
+                    >
+                        &#9776;
+                    </button>
+                    <Darkmode/>
+                </div>
                 <ChatWindow />
                 <InputField/>
             </div>

@@ -37,9 +37,48 @@ export const useChatStore = create((set) => ({
   },
   sendMessage: async(message: string, session_id: string, user_id: string) => {
     try {
+      const response = await fetch(`${URL}/stream_chat`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          content: message,
+          session_id: session_id,
+          user_id: user_id,
+        }),
+      });
+
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder('utf-8');
+      set((state: any) => ({
+        conversations: [...state.conversations, 
+          {role: "human", content: message},
+          {role: "AIMessageChunk", content: ""}
+        ]
+      }))
+
+      let done = false
+      let accumulatedChunks = '';
+      while(!done) {
+        const { value, done: streamDone } = await reader?.read()!;
+        done = streamDone;
+        accumulatedChunks += decoder.decode(value);
+        set((state: any) => ({
+          conversations: [...state.conversations.slice(0, -1), 
+            { role: "AIMessageChunk", content: accumulatedChunks}
+          ]
+        }))
+
+      }
+      set((state: any) => ({
+        conversations: [...state.conversations.slice(0, -1), 
+          { role: "AIMessageChunk", content: accumulatedChunks}
+        ]
+      }))
       
     } catch (error) {
-      
+      console.log(error)
     }
   },
 
