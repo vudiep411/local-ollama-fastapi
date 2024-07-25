@@ -15,9 +15,8 @@ from fastapi.responses import StreamingResponse
 import redis
 
 app = FastAPI()
-
 callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
-llm = ChatOllama(model="llama3", callbacks=callback_manager)
+llm = ChatOllama(model="llama3.1", callbacks=callback_manager)
 redis_url = "redis://localhost:6379"
 
 def history(session_id, redis_url):
