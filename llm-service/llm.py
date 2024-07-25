@@ -32,7 +32,21 @@ app.add_middleware(
 
 
 callback_manager = AsyncIteratorCallbackHandler()
-llm = ChatOllama(model="llama3")
+# system_prompt = """
+# <|begin_of_text|><|start_header_id|>system<|end_header_id|>
+
+# Environment: ipython
+# Tools: brave_search, wolfram_alpha
+
+# Cutting Knowledge Date: December 2023
+# Today Date: 23 Jul 2024
+
+# You are a helpful assistant<|eot_id|>
+# <|start_header_id|>user<|end_header_id|>
+
+# What is the current weather in Menlo Park, California?<|eot_id|><|start_header_id|>assistant<|end_header_id|>
+# """
+llm = ChatOllama(model="llama3.1")
 redis_url = "redis://localhost:6379"
 
 # Models
