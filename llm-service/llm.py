@@ -1,14 +1,8 @@
-# from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
-# from langchain.callbacks.manager import CallbackManager
-# from langchain.prompts import BasePromptTemplate
-# import os
-# from langchain_core.output_parsers import StrOutputParser
 from langchain_community.chat_models import ChatOllama
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_core.messages import HumanMessage, AIMessage
 from langchain_community.chat_message_histories import RedisChatMessageHistory
 from fastapi import FastAPI
-from langchain.callbacks import AsyncIteratorCallbackHandler
 import redis
 from pydantic import BaseModel
 from fastapi.responses import StreamingResponse
@@ -30,22 +24,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-callback_manager = AsyncIteratorCallbackHandler()
-# system_prompt = """
-# <|begin_of_text|><|start_header_id|>system<|end_header_id|>
-
-# Environment: ipython
-# Tools: brave_search, wolfram_alpha
-
-# Cutting Knowledge Date: December 2023
-# Today Date: 23 Jul 2024
-
-# You are a helpful assistant<|eot_id|>
-# <|start_header_id|>user<|end_header_id|>
-
-# What is the current weather in Menlo Park, California?<|eot_id|><|start_header_id|>assistant<|end_header_id|>
-# """
 llm = ChatOllama(model="llama3.1")
 redis_url = "redis://localhost:6379"
 
