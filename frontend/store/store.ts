@@ -7,6 +7,7 @@ export const useChatStore = create((set) => ({
   conversations: [],
   sessionId: "",
   userId: "vudiep411",
+
   fetchSessions: async (user_id: any) => {
     console.log("fetch session...")
     try {
@@ -24,17 +25,7 @@ export const useChatStore = create((set) => ({
       console.log(error)
     }
   },
-  // fetchMessages: async (session_id: any) => {
-  //   try {
-  //     console.log("fetch messages...")
-  //     const response = await axios.get(`${URL}/messages/${session_id}`)
-  //     set((state: any) => ({
-  //       conversations: response.data
-  //     }))
-  //   } catch (error) {
-  //     console.log(error)
-  //   }
-  // },
+
   sendMessage: async(message: string, session_id: string, user_id: string) => {
     try {
       const response = await fetch(`${URL}/stream_chat`, {
@@ -99,7 +90,7 @@ export const useChatStore = create((set) => ({
 
   addSession: (sessionId: string) => {
     set((state: any) => ({
-      sessions: [...state.sessions, {key: sessionId, value: sessionId}]
+      sessions: [...state.sessions, { key: sessionId, value: sessionId }]
     }))
     set((state: any) => ({
       sessionId: sessionId
@@ -107,5 +98,21 @@ export const useChatStore = create((set) => ({
     set((state: any) => ({
       conversations: []
     }))
+  },
+
+  deleteSession: async (sessionId: string, user_id: string) => {
+    try {
+      await axios.delete(`${URL}/session`, {
+        data: {
+          user_id: user_id,
+          session_id: sessionId
+        }
+      })
+      set((state: any) => ({
+        sessions: state.sessions.filter((session: any) => session.key != sessionId)
+      }))
+    } catch (error) {
+      console.log(error)
+    }
   }
 }));
