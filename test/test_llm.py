@@ -13,10 +13,11 @@ import json
 from pydantic import BaseModel
 from fastapi.responses import StreamingResponse
 import redis
+from langchain_core.callbacks import StdOutCallbackHandler
 
 app = FastAPI()
-callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
-llm = ChatOllama(model="llama3.1", callbacks=callback_manager)
+handler = StdOutCallbackHandler()
+llm = ChatOllama(model="llama3.1", callbacks=[handler])
 redis_url = "redis://localhost:6379"
 
 def history(session_id, redis_url):
@@ -29,17 +30,18 @@ def send_message(query, config):
                     session_id, url=redis_url
                 )
     )
-    chain.invoke(
-        [HumanMessage(content=query)],
-        config=config
-    )
+    for chunk in chain.stream([HumanMessage(content=query)], config=config):
+            print(chunk.content, end="", flush=True)
 
-stop = False
-while not stop:
-    prompt = input(">>> ")
-    config = {"configurable": {"session_id": "1"}}
-    send_message(prompt, config)
-    if prompt == "stop":
-        stop = True
-    print()
 
+def start():
+    stop = False
+    while not stop:
+        prompt = input(">>> ")
+        config = {"configurable": {"session_id": "3"}}
+        send_message(prompt, config)
+        if prompt == "stop":
+            stop = True
+        print()
+
+start()

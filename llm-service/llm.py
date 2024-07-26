@@ -7,6 +7,24 @@ import redis
 from pydantic import BaseModel
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
+from langchain.schema import Document
+from langchain.prompts import PromptTemplate
+from langchain_core.output_parsers import StrOutputParser
+
+prompt = PromptTemplate(
+    template="""You are an assistant for question-answering tasks.
+
+    Use the following documents to answer the question.
+
+    If you don't know the answer, just say that you don't know.
+
+    Use three sentences maximum and keep the answer concise:
+    Question: {question}
+    Documents: {documents}
+    Answer:
+    """,
+    input_variables=["question", "documents"],
+)
 
 app = FastAPI()
 
@@ -24,6 +42,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+
 llm = ChatOllama(model="llama3.1")
 redis_url = "redis://localhost:6379"
 
@@ -39,6 +59,17 @@ class DeleteMessageRequest(BaseModel):
 
 # Calling LLM streaming function
 async def send_message(query, config):
+    template="""You are an assistant for question-answering tasks.
+
+    Use the following documents to answer the question.
+
+    If you don't know the answer, just say that you don't know.
+
+    Use three sentences maximum and keep the answer concise:
+    Question: {question}
+    Documents: {documents}
+    Answer:
+    """.format(question=query, documents="")
     try:
         chain = RunnableWithMessageHistory(
             llm, 
@@ -46,7 +77,9 @@ async def send_message(query, config):
                 session_id, url=redis_url
             )
         )
-        async for chunk in chain.astream([HumanMessage(content=query)], config=config):
+        # rag_chain = prompt | chain | StrOutputParser()
+
+        async for chunk in chain.astream([HumanMessage(content=template)], config=config):
             yield chunk.content
     except Exception as e:
         print(e)
@@ -94,7 +127,18 @@ async def delete_session(user: DeleteMessageRequest):
     messages = history(user.session_id, redis_url)
     await messages.aclear()
     r = redis.Redis.from_url(redis_url, decode_responses=True)
-    r.srem(user.user_id, user.session_id)
+    key_type = r.type(user.user_id)
+    # Delete key based on its type
+    if key_type == 'set':
+        r.srem(user.user_id, user.session_id)
+    elif key_type == 'hash':
+        r.hdel(user.user_id, user.session_id)
+    elif key_type == 'list':
+        r.lrem(user.user_id, 0, user.session_id)
+    elif key_type == 'zset':
+        r.zrem(user.user_id, user.session_id)
+    else:
+        return {"error": "Unsupported key type or key does not exist"}
     return {"session_id": user.session_id}
 
 
