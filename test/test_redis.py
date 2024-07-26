@@ -11,7 +11,4 @@ def print_session_messages(session_id):
 def delete_key(key):
     r.delete(key)
 
-delete_key("message_store:3")
-delete_key("message_store:2")
 test_redis()
-print_session_messages("message_store:1")
