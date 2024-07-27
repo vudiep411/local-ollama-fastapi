@@ -111,6 +111,11 @@ export const useChatStore = create((set) => ({
       set((state: any) => ({
         sessions: state.sessions.filter((session: any) => session.key != sessionId)
       }))
+
+      set((state: any) => ({
+        sessionId: ""
+      }))
+      
     } catch (error) {
       console.log(error)
     }
