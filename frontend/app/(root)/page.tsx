@@ -5,11 +5,12 @@ import SideBar from "@/components/SideBar";
 import ChatWindow from "@/components/ChatWindow";
 import InputField from "@/components/InputField";
 import Darkmode from "@/components/DarkMode";
+import { useChatStore } from "@/store/store";
 
 
 export default function Home() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
-
+    const sessionId = useChatStore((state: any) => state.sessionId)
     const toggleSidebar = () => {
         setSidebarOpen(!sidebarOpen);
     };
@@ -29,8 +30,8 @@ export default function Home() {
                     </button>
                     <Darkmode/>
                 </div>
-                <ChatWindow />
-                <InputField/>
+                <ChatWindow/>
+                { sessionId.length > 0 && <InputField/> }
             </div>
         </div>
     );
