@@ -10,21 +10,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from langchain.schema import Document
 from langchain.prompts import PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
+# from langchain_community.tools.tavily_search import TavilySearchResults
+# from dotenv import load_dotenv
 
-prompt = PromptTemplate(
-    template="""You are an assistant for question-answering tasks.
+# load_dotenv()
+# web_search_tool = TavilySearchResults()
 
-    Use the following documents to answer the question.
-
-    If you don't know the answer, just say that you don't know.
-
-    Use three sentences maximum and keep the answer concise:
-    Question: {question}
-    Documents: {documents}
-    Answer:
-    """,
-    input_variables=["question", "documents"],
-)
 
 app = FastAPI()
 
@@ -57,29 +48,18 @@ class DeleteMessageRequest(BaseModel):
     user_id: str
     session_id: str
 
+
 # Calling LLM streaming function
 async def send_message(query, config):
-    template="""You are an assistant for question-answering tasks.
-
-    Use the following documents to answer the question.
-
-    If you don't know the answer, just say that you don't know.
-
-    Use three sentences maximum and keep the answer concise:
-    Question: {question}
-    Documents: {documents}
-    Answer:
-    """.format(question=query, documents="")
     try:
+
         chain = RunnableWithMessageHistory(
             llm, 
             lambda session_id: RedisChatMessageHistory(
                 session_id, url=redis_url
             )
         )
-        # rag_chain = prompt | chain | StrOutputParser()
-
-        async for chunk in chain.astream([HumanMessage(content=template)], config=config):
+        async for chunk in chain.astream([HumanMessage(content=query)], config=config):
             yield chunk.content
     except Exception as e:
         print(e)
