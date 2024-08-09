@@ -25,8 +25,14 @@ export const useChatStore = create((set) => ({
       console.log(error)
     }
   },
-
-  sendMessage: async(message: string, session_id: string, user_id: string) => {
+  setState: (message: string, type: string) => {
+    set((state: any) => ({
+      conversations: [...state.conversations, 
+        { role: type, content: message },
+      ]
+    }))
+  },
+  sendMessage: async(message: string, session_id: string, user_id: string, context: string) => {
     try {
       const response = await fetch(`${URL}/stream_chat`, {
         method: 'POST',
@@ -37,6 +43,7 @@ export const useChatStore = create((set) => ({
           content: message,
           session_id: session_id,
           user_id: user_id,
+          context: context
         }),
       });
 
@@ -44,7 +51,6 @@ export const useChatStore = create((set) => ({
       const decoder = new TextDecoder('utf-8');
       set((state: any) => ({
         conversations: [...state.conversations, 
-          {role: "human", content: message},
           {role: "AIMessageChunk", content: ""}
         ]
       }))
@@ -116,6 +122,19 @@ export const useChatStore = create((set) => ({
         sessionId: ""
       }))
       
+    } catch (error) {
+      console.log(error)
+    }
+  },
+
+  getWebContext: async (message: string, session_id: string, user_id: string) => {
+    try {
+      const response = await axios.post(`${URL}/web_search`, {
+        content: message,
+        session_id: session_id,
+        user_id: user_id
+      })
+      return response.data
     } catch (error) {
       console.log(error)
     }

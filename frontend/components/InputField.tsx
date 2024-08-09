@@ -6,13 +6,20 @@ import { useChatStore } from '@/store/store';
 
 const InputField: React.FC = () => {
   const [message, setMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const sendMessage = useChatStore((state: any) => state.sendMessage)
   const sessionId = useChatStore((state: any) => state.sessionId)
   const userId = useChatStore((state: any) => state.userId)
+  const getWebContext = useChatStore((state: any) => state.getWebContext)
+  const setState = useChatStore((state: any) => state.setState)
 
-  const handleSendMessage = () => {
-    sendMessage(message, sessionId, userId)
+  const handleSendMessage = async () => {
+    setState(message, 'human')
     setMessage('')
+    setIsLoading(true)
+    const res = await getWebContext(message, sessionId, userId)
+    await sendMessage(message, sessionId, userId, res)
+    setIsLoading(false)
   }
 
   const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
@@ -35,7 +42,7 @@ const InputField: React.FC = () => {
       <Button
         className="ml-2 px-4 py-2 rounded"
         onClick={handleSendMessage}
-        disabled={!message.trim()}
+        disabled={!message.trim() || isLoading}
       >
         Send
       </Button>
