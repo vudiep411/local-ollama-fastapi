@@ -1,6 +1,6 @@
 from langchain_community.chat_models import ChatOllama
 from langchain_core.runnables.history import RunnableWithMessageHistory
-from langchain_core.messages import HumanMessage, AIMessage
+from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 from langchain_community.chat_message_histories import RedisChatMessageHistory
 from fastapi import FastAPI
 import redis
@@ -10,6 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from langchain.schema import Document
 from langchain.prompts import PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
+from utils.tools import history, get_search_context
 # from langchain_community.tools.tavily_search import TavilySearchResults
 # from dotenv import load_dotenv
 
@@ -21,7 +22,7 @@ app = FastAPI()
 
 # Configure CORS
 origins = [
-    "http://localhost:3000",
+    "http://localhost:5000",
     # Add other origins if needed
 ]
 
@@ -43,10 +44,15 @@ class Message(BaseModel):
     content: str
     session_id: str
     user_id: str
-
+    context: str
 class DeleteMessageRequest(BaseModel):
     user_id: str
     session_id: str
+
+class WebSearchRequest(BaseModel):
+    content: str
+    session_id: str
+    user_id: str
 
 
 # Calling LLM streaming function
@@ -64,10 +70,6 @@ async def send_message(query, config):
     except Exception as e:
         print(e)
 
-# Get langchain redis message history
-def history(session_id, redis_url):
-    return RedisChatMessageHistory(session_id, redis_url)
-
 async def save_user_session(user_id, session_id, message):
     r = redis.Redis.from_url(redis_url, decode_responses=True)
     r.hset(user_id, session_id, message)
@@ -79,6 +81,9 @@ async def save_user_session(user_id, session_id, message):
 async def stream_chat(message: Message):
     config = {"configurable": {"session_id": message.session_id}}
     await save_user_session(message.user_id, message.session_id, message.content)
+    hst = history(message.session_id, redis_url)
+    if message.context:
+        hst.add_message(SystemMessage(content=message.context))
     generator = send_message(message.content, config)
     return StreamingResponse(generator, media_type="text/event-stream")
 
@@ -122,4 +127,9 @@ async def delete_session(user: DeleteMessageRequest):
     return {"session_id": user.session_id}
 
 
-
+@app.post("/web_search")
+async def web_search(message: WebSearchRequest):
+    # hst = history(message.session_id, redis_url)
+    search_context = get_search_context(message.content)
+    # hst.add_message(SystemMessage(content=search_context))
+    return search_context
