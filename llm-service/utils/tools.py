@@ -52,9 +52,8 @@ def get_tools(query):
 
 def system_prompt(query, context):
     SYSTEM_PROMPT = """
-    You are a helpful assistant. Use the following sources of information to answer the question IF NEEDED.
+    You are a helpful assistant. Use the following sources of information to answer the following question IF NEEDED.
     Cite the sources in your answer if used.
-    Question: {query}
 
     Context: {context}
     """.format(query=query, context=context)
@@ -69,5 +68,5 @@ def get_search_context(query):
                 logging.info(f"Tool call: {tool_call}")
                 search_query = tool_call['function']['arguments']['query']
                 context = search_web(search_query)
-                return system_prompt(query, context)
+                return system_prompt(query, context) if context else ""
     return ""
